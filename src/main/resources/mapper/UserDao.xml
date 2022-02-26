@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--这里的namespace必须和是对应的mapper.java的地址-->
+<mapper namespace="com.example.demo.dao.UserDao">
+
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+        insert into user(username,password,salt) values(#{username},#{password},#{salt})
+    </insert>
+
+    <select id="selectUser" resultType="com.example.demo.entity.UserEntity">
+        select * from user where username = #{username}
+    </select>
+
+    <resultMap id="role" type="com.example.demo.vo.UserRoleVo" >
+        <id column="uid" property="id"/>
+        <result property="username" column="username"/>
+        <collection property="roles" javaType="list" ofType="com.example.demo.entity.RoleEntity">
+            <result column="id" property="id"/>
+            <result column="role_name" property="roleName"/>
+            <collection property="permis" javaType="list" ofType="com.example.demo.entity.PermisEntity">
+                <result column="pid" property="id"/>
+                <result column="permis" property="permis"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="selectUserRoles" resultMap="role">
+        select user.id uid, user.username, role.id, role.role_name, p.permis,p.id pid
+        from user
+                 left join user_role ur on user.id = ur.user_id
+                 left join role_permis rp on rp.role_id = ur.id
+                 left join role on rp.role_id = role.id
+                 left join permis p on p.id = rp.permis_id
+        where user.username = #{username}
+    </select>
+</mapper>
